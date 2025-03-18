@@ -1,0 +1,314 @@
+Docker architecture
+===================
+
+
+1. Docker Engine
+-----------------
+Docker Engine is the core component of Docker, responsible for building, running, and managing containers. It has two main parts:
+
+Docker Daemon (dockerd): This is the background service that manages Docker containers and images. It handles container orchestration, image management, and network configuration. 
+
+The Docker Daemon listens for Docker API requests and can communicate with other Docker Daemons to manage containers across multiple hosts.
+
+2.Docker CLI (docker):
+---------------------
+The Docker Command Line Interface (CLI) is the tool used by developers and administrators to interact with the Docker Daemon. Commands like docker run, docker build, and docker ps are executed via the CLI to manage containers and images.
+
+3. Docker Images
+-----------------
+Description: Docker images are the blueprints for Docker containers. They contain the application code, libraries, dependencies, and the runtime environment needed to run a specific application. Images are immutable and can be versioned and shared.
+
+Layers: Docker images are built in layers. Each layer represents a set of changes or instructions in the image's Dockerfile. Layers are cached and reused, which helps in optimizing storage and build times.
+
+4. Docker Containers
+---------------------
+Description: Containers are instances of Docker images. They are lightweight, portable, and run the application in isolation from the host system and other containers. Each container has its own filesystem, network stack, and process space.
+
+Isolation: Containers use operating system-level virtualization to provide isolation. They share the host OS kernel but run in separate user spaces.
+
+5. Docker Registry
+------------------
+Description: A Docker Registry is a storage and distribution system for Docker images. Docker Hub is the default public registry provided by Docker. There are also private registries, such as Docker Registry (open-source), or enterprise solutions like Docker Trusted Registry.
+
+Operations: Registries handle pushing and pulling of images. When you build an image, you can push it to a registry so that it can be shared with others or used in different environments. Conversely, you can pull images from a registry to deploy them on into different environment.
+
+
+NOTE: Registry contains collection of repositories.
+
+we can manage these docker registry's by our self like nexus, Jfrog etc
+
+Managed docker registories
+===========================
+ECR --> Elastic container registry(AWS)
+ACR --> Azure container registry(Azure)
+GCR --> Google container registry(GCP)
+
+Docker repository --> we can maintain(Store) docker image with same name with different 		      tag(version)
+
+
+
+
+
+==================================================================================
+
+docker flow
+===========
+
+
+docker images
+
+docker ps or docker container ls
+
+docker run -d -p 80:80 --name nginxcontaner nginix:latest
+
+
+docker run -d -p 80:80 --name tomcatcontainer tomcat:latest
+
+
+netstat -tunlap
+sudo apt install net-tools
+netstat -tunlap
+
+docker exec tomcat ls webapps   --> no host folder in latest version
+
+docker exec tomcat ls java -version --> to see the java version
+
+
+=========================================
+
+docker rm -f tomcat 
+
+docker run -d -p 8080:8080 --name tomcat tomcat:6.0.43-jre8
+
+docker exec tomcat ls webapps
+
+
+===========================================
+
+
+
+
+
+
+
+docker objects
+===============
+
+### Summary of Docker Objects
+
+- **Containers**: Running instances of images.
+- **Images**: Read-only templates used to create containers.
+- **Volumes**: Persistent storage for container data.
+- **Networks**: Facilitate communication between containers and with external systems.
+- **Registries**: Storage and distribution points for images.
+- **Dockerfile**: Defines how to build a Docker image.
+- **Docker Compose**: Manages multi-container Docker applications.
+
+=========================================================================
+
+
+IQ] what is docker build context?
+
+In Docker, the build context is the set of files and directories that are available to the Docker engine when building a Docker image.
+
+
+practical session to undestand docker
+=====================================
+
+step 1: check in your server docker is installed or not
+
+step 2:
+     
+   git clone https://github.com/kkeducation12345/maven-web-app-project-kk-funda.git
+
+   cd maven-web-app-project-kk-funda
+
+step 3: 
+
+   sudo apt install maven -y   --> It will install maven and jre
+ 
+    java --version
+    mvn -version
+
+step 4: Build the artifactory
+
+     mvn clean package
+
+    <build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>3.3.2</version> <!-- Use a stable version -->
+        </plugin>
+    </plugins>
+</build>
+
+
+step 5: to build the docker image; please make sure to create a docker file.
+
+      vi Dockerfile
+  
+      FROM tomcat:8.0.21-jre8
+      COPY target/maven-web-application.war /usr/local/tomcat/webapps/maven-web-application.war
+   
+      docker build -t kkeducation12345/java-web-app .
+
+step 6: To list the images
+   
+      docker images or docker image ls
+
+step 7: Push the image to docker hub
+
+    NOTE: Before pushing image we need to authenticate 
+
+    docker login -u kkeducation12345 -p password
+
+    docker push kkeducation12345/java-web-app
+
+step 8: How to run a container from an image
+
+    docker run -d -p 8080:8080 --name javawebapp kkeducation12345/java-web-app
+
+step 9: Access the application
+
+docker ps -a  --> To list the containers
+
+
+
+===============================================================================================
+
+Go inside the container
+-----------------------
+
+docker exec -it javawebapp /bin/bash
+
+
+=============================================================================
+
+
+commands
+========
+
+docker info 
+docker --version or docker version
+
+image related
+=============
+
+How to build docker image
+-------------------------
+
+docker build -t <image> <buildContext>
+
+docker build -t kkeducation123456/java-web-app:1 .
+docker build -t nexus.jio.com/java-web-app:1 .
+
+docker build -f customName kkeducation123456/java-web-app:1 .
+
+
+How to list the images
+----------------------
+
+docker images or docker image ls
+
+How to login docker hub
+-----------------------
+
+docker login -u username -p password
+
+docker info
+
+cat password |docker login -u kkeducation12345 --password-stdin
+
+How to logout 
+-------------
+
+docker logout
+docker info
+
+
+How to push an docker image
+---------------------------
+docker push kkeducation123456/java-web-app:1 .
+
+
+How to pull the image
+---------------------
+
+docker pull kkeducation123456/java-web-app:1
+
+to see more details about image
+-------------------------------
+
+docker image inspect <imageid/imageName>
+
+To see the layers of an image
+-----------------------------
+
+docker history <imageId/ImageName>
+
+How to delete image
+-------------------
+
+docker rmi <image_id/Image_name>
+
+
+How to delete multiple images?
+------------------------------
+
+docker rmi <image1> <image2>
+
+How to delete all the images
+----------------------------
+
+docker rmi -f $(docker images -q)
+
+what is dangling images?
+------------------------
+
+How to display only dangling images?
+------------------------------------
+
+docker images -f dangling=true
+
+how to delete all the dangling images?
+---------------------------------------
+
+docker rmi -f $(docker images -q -f dangling=true)
+
+
+
+docker system prune
+docker image prune
+docker container prune
+docker network prune
+docker volume prune
+
+
+
+docker tag
+-----------
+
+docker tag customname kkeducation123456/java-web-app:1
+
+
+
+docker system df
+----------------
+
+
+How to move image from one server to another server?
+----------------------------------------------------
+
+Approach 1: Use the nexus/Jfrog/DTR/ECR
+
+Approach 2:
+
+   docker save -o <filename>.tar <imageId>
+   scp filename.tar ubuntu@172.34.42.78:/home/ubuntu
+
+  docker load -i filename.tar
+
+
+=========================================================================================
